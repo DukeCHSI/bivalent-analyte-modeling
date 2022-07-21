@@ -120,8 +120,8 @@ objective_function <- function(pars, df, incl_concentrations, num_conc, use_rege
       sim_results <- run_model(pars, df, num_conc, incl_concentrations, use_regeneration, model)
       solved_RU <- sim_results$RU
       err <- na.omit(solved_RU - RU_data)
-    },
-    error = function(e){ 
+  },
+    error = function(e){
       # (Optional)
       # Do this if an error is caught...
       err <- na.omit(rep(-1e3, length(RU_data)) - RU_data)
@@ -326,8 +326,8 @@ fit_heterogenousLigand_full <- function(well_idx, sample_info, x_vals, y_vals,
     res_R0 <- NULL
     error_val <- 2e64
     
-    # print("Initial Parameters:")
-    # print(init_params)
+    print("Initial Parameters:")
+    print(init_params)
     
     tryCatch(
       expr = {
@@ -347,7 +347,7 @@ fit_heterogenousLigand_full <- function(well_idx, sample_info, x_vals, y_vals,
         # print("Estimated Parameters:")
         # print(coefficients(res_R0))
       },
-      error = function(e){ 
+      error = function(e){
         # (Optional)
         # Do this if an error is caught...
         res_R0$deviance <- 2e64
@@ -454,7 +454,7 @@ run_model <- function(pars, df, num_conc, incl_concentrations, use_regeneration,
                  out[length(t_asc),5])
       
       out <- ode(y = state, times = t_dis, func = heterogenousLigand_model, parms = parameters)
-      df_dissoc$RU <- out[,4] + out[,5] + RI
+      df_dissoc$RU <- out[2:length(t_dis),4] + out[2:length(t_dis),5] + RI
       
     }
     else if (model == 'bivalentAnalyte'){
@@ -500,7 +500,7 @@ run_model <- function(pars, df, num_conc, incl_concentrations, use_regeneration,
                  out[length(t_asc),4])
       
       out <- ode(y = state, times = t_dis, func = bivalentAnalyte_model, parms = parameters)
-      df_dissoc$RU <- out[,3] + out[,4] + RI
+      df_dissoc$RU <- out[2:length(t_dis),3] + out[2:length(t_dis),4] + RI
       
     }
     else if (model == 'monovalent'){
@@ -537,7 +537,7 @@ run_model <- function(pars, df, num_conc, incl_concentrations, use_regeneration,
                  out[length(t_asc),3])
       
       out <- ode(y = state, times = t_dis, func = monovalent_model, parms = parameters)
-      df_dissoc$RU <- out[,3] + RI
+      df_dissoc$RU <- out[2:length(t_dis),3] + RI
       
     }
     else if (model == 'heterogenousAnalyte'){
@@ -597,7 +597,7 @@ run_model <- function(pars, df, num_conc, incl_concentrations, use_regeneration,
                  out[length(t_asc),4])
       
       out <- ode(y = state, times = t_dis, func = heterogenousAnalyte_model, parms = parameters)
-      df_dissoc$RU <- out[,3] + out[,4] +  RI
+      df_dissoc$RU <- out[2:length(t_dis),3] + out[2:length(t_dis),4] +  RI
       
     }
     else if (model == 'twoState'){
@@ -643,7 +643,7 @@ run_model <- function(pars, df, num_conc, incl_concentrations, use_regeneration,
                  out[length(t_asc),4])
       
       out <- ode(y = state, times = t_dis, func = twoState_model, parms = parameters)
-      df_dissoc$RU <- out[,3] + out[,4] + RI
+      df_dissoc$RU <- out[2:length(t_dis),3] + out[2:length(t_dis) ,4] + RI
       
     }
     else if (model == 'bispecificLigandHeterogenousAnalyte'){
@@ -694,7 +694,7 @@ run_model <- function(pars, df, num_conc, incl_concentrations, use_regeneration,
                  out[length(t_asc),5])
       
       out <- ode(y = state, times = t_dis, func = bispecificLigandHeterogenousAnalyte_model, parms = parameters)
-      df_dissoc$RU <- out[,3] + out[,4] + out[,5] +  RI
+      df_dissoc$RU <- out[2:length(t_dis),3] + out[2:length(t_dis),4] + out[2:length(t_dis),5] +  RI
     }
     
     full_output_RU <- bind_rows(full_output_RU, df_assoc, df_dissoc)

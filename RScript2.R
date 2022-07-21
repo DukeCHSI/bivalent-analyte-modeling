@@ -169,7 +169,7 @@ bivalent_fits_list <- map(.x = 1:nwells, .f = fit_heterogenousLigand_full, sampl
                           incl_concentrations_values)
 
 # save(monovalent_fits_list, file="monovalent.Rdata")
-# save(bivalent_fits_list, file="bivalent_newResults_30mins.Rdata")
+save(bivalent_fits_list, file="bivalent_newResults_30mins.Rdata")
 # load(file='NoBulkshiftShort.Rdata')
 # load(file='bivalent_newResults_30mins.Rdata')
 # load(file='bulkshift.Rdata')
