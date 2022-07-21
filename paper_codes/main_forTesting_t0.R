@@ -10,11 +10,19 @@ library(deSolve)
 library(parallel)
 library(svDialogs)
 
-setwd("~/Summer2022/project/paper_codes") ###### Please change these
-
 num_cores <- detectCores()/2
 options("scipen"=2, "digits"=3)
-source("~/Summer2022/project/paper_codes/functions_forTesting_t0.R") ###### Please change these
+
+# select working directory
+files_directory  <-  rstudioapi::selectDirectory(
+  caption <- "Select Directory",
+  label <- "Select"
+)
+
+# setwd("~/Summer2022/project/paper_codes")
+
+
+source("paper_codes/functions_forTesting_t0.R") 
 #source("~/Google Drive/My Drive/R/HIV_new_data/code/3odes.R")
 #source("~/Google Drive/My Drive/R/HIV_new_data/code/RTFunctions_kyle3.R")
 
@@ -23,7 +31,7 @@ source("~/Summer2022/project/paper_codes/functions_forTesting_t0.R") ###### Plea
 #                               filter =
 #                               existing = TRUE)
 
-sample_sheet_path <- "~/Summer2022/project/paper_data/Bivalent Binding 2nd - CH505 CH31 - info sheet.csv" ###### Please change these
+sample_sheet_path <- "paper_data/Bivalent Binding 2nd - CH505 CH31 - info sheet.csv"
 
 sample_sheet <- read_csv(sample_sheet_path)
 
@@ -43,7 +51,7 @@ sample_info <- process_sample_sheet(sample_sheet_path, rows_dict, sort_order = "
 #                               filter = "All Files (*)",
 #                               existing = TRUE)
 
-data_file_path <- "~/Summer2022/project/paper_data/Bivalent Binding 2nd - CH505 CH31 - new output format.xlsx" ###### Please change these
+data_file_path <- "paper_data/Bivalent Binding 2nd - CH505 CH31 - new output format.xlsx"
 
 titration_data <- read_excel(data_file_path, col_names = TRUE, skip = 2, n_max = 1000)
 
