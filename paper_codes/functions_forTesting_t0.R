@@ -127,12 +127,12 @@ fit_association_dissociation <- function(well_idx, sample_info, x_vals, y_vals,
   ###########################  ###########################  ###########################
   # Manual modification for options
   ###########################  ###########################  ###########################
-  use_globalRmax <- "Y"
+  use_globalRmax <- "N"
   use_bulkShift <- "N"
   use_regeneration <- "Y" #sample_info[well_idx,]$Regen.
   
   # model <- sample_info[well_idx,]$Model
-  model <- 'bivalentAnalyte'
+  model <- 'bivalentAnalyte_tstar'
   
   fixed_info <- NULL
   # fixed_info$CH31 <- fixed_sheet$CH31[well_idx,]
@@ -162,10 +162,9 @@ fit_association_dissociation <- function(well_idx, sample_info, x_vals, y_vals,
     lower <- c(0, 0, 0, 0, rep(0, num_Rmax), rep(0, num_R0), rep(0, num_conc))
     param_names <- c("ka1", "ka2", "kd1", "kd2", rep("Rmax", num_Rmax), rep('t_star', num_conc))
   }
-  else if (model == 'bivalentAnalyte_fitAL10'){
-    lower <- c(0, 0, 0, 0, R0_start$min, rep(0, num_R0), rep(0, num_conc))
-    upper <- c(1e8, 1e-1, 1e-1, 1e-1, rep(5*max(Rmax_start$max), num_Rmax), rep(max(R0_start$min), num_R0), rep(1, num_conc))
-    param_names <- c("ka1", "ka2", "kd1", "kd2", rep("Rmax", num_Rmax), rep("p", num_conc))
+  else if (model == 'bivalentAnalyte_tstar'){
+    lower <- c(0, 0, 0, 0, rep(0, num_Rmax), rep(0, num_R0), rep(0, num_conc))
+    param_names <- c("ka1", "ka2", "kd1", "kd2", rep("Rmax", num_Rmax), rep('t_star', num_conc))
   }
 
   ka1_IGs <- c(1e2, 1e3, 1e4)
@@ -175,12 +174,12 @@ fit_association_dissociation <- function(well_idx, sample_info, x_vals, y_vals,
   
   
   init_params_list <- NULL
-  
+  t0_count <- 1
   for (ka1_IG in ka1_IGs){
     for (ka2_IG in ka2_IGs){
       for (kd1_IG in kd1_IGs){
         for (kd2_IG in kd2_IGs){
-          temp_IGs <- c(ka1_IG, ka2_IG, kd1_IG, kd2_IG, max(Rmax_start$max)*rep(1, num_Rmax), rep(60, num_conc))
+          temp_IGs <- c(ka1_IG, ka2_IG, kd1_IG, kd2_IG, max(Rmax_start$max)*rep(1, num_Rmax), runif(num_conc, min=0, max=120))
           init_params_list <- rbind(init_params_list, temp_IGs)
         }
       }
@@ -256,9 +255,9 @@ fit_association_dissociation <- function(well_idx, sample_info, x_vals, y_vals,
     solved_success <- FALSE
   }
   
-  # full_param_table <- cbind(init_params_list, estimated_params_list, estimated_fval)
-  # full_param_table <- full_param_table %>% as_tibble() #&>& setNames()
-  # write_csv(full_param_table, paste('~/Summer2022/project/paper_codes/param_table_old/full_param',as.character(well_idx),'.csv',sep=''))
+  full_param_table <- cbind(init_params_list, estimated_params_list, estimated_fval)
+  full_param_table <- full_param_table %>% as_tibble() #&>& setNames()
+  write_csv(full_param_table, paste('~/Summer2022/project/paper_codes/param_table_new/full_param',as.character(well_idx),'.csv',sep=''))
   
   # kd_param_table <- as.matrix(full_param_table[,c(1:4,7:12,23)])
   # kd_param_table <- kd_param_table %>% as_tibble() %>% setNames(c("ka1_0", "ka2_0", "kd1_0", "kd2_0", "ka1", "ka2", "kd1", "kd2", "SSE"))
@@ -301,6 +300,8 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
                       fixed_info=NULL){
   
   full_output_RU <- NULL
+  # print("Print t_star")
+  # print(pars)
   
   for (i in 1:num_conc){
     
@@ -368,6 +369,8 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
                    out[length(t_pred_assoc),4])
       }
       
+      #
+      
       ########### Association ########### 
       parameters <- c(ka1 = ka1,
                       kd1 = kd1,
@@ -406,7 +409,7 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
       df_dissoc$RU <- out[2:length(t_dis),3] + out[2:length(t_dis),4] + RI
       
     }
-    else if (model == 'bivalentAnalyte_fitAL10'){
+    else if (model == 'bivalentAnalyte_tstar'){
       
       ka1 <- pars[param_names == "ka1"]
       ka2 <- pars[param_names == "ka2"]
@@ -415,33 +418,21 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
       kd2 <- pars[param_names == "kd2"]
       
       Rmaxs <- pars[param_names == "Rmax"]
-      ps <- pars[param_names == "p"]
-      
-      RU0 <- df_assoc$RU[1]
       
       num_pars <- 4
       
-      # if (use_globalRmax == "N"){
-      #   state <- c(L  = Rmaxs[i] - RU0,
-      #              X1 = RU0 - AL20s[i],
-      #              X2 = AL20s[i])
-      # }
-      # else{
-      #   state <- c(L  = Rmaxs[1] - RU0,
-      #              X1 = RU0 - AL20s[i],
-      #              X2 = AL20s[i])
-      # }
+      
+      
       if (use_globalRmax == "N"){
-        state <- c(L  = Rmaxs[i] - RU0,
-                   X1 = ps[i]*RU0,
-                   X2 = (1- ps[i])*RU0)
+        state <- c(L  = Rmaxs[i],
+                   X1 = 0,
+                   X2 = 0)
       }
       else{
-        state <- c(L  = Rmaxs[1] - RU0,
-                   X1 = ps[i]*RU0,
-                   X2 = (1- ps[i])*RU0)
+        state <- c(L  = Rmaxs[1],
+                   X1 = 0,
+                   X2 = 0)
       }
-      
       
       if (use_regeneration == "N"){
         RIs <- pars[param_names == "R0"]
@@ -451,19 +442,48 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
         RI <- 0
       }
       
-      ########### Association ########### 
+      
+      # Association
       parameters <- c(ka1 = ka1,
                       kd1 = kd1,
                       ka2 = ka2,
                       kd2 = kd2,
                       Am = incl_concentrations[i])
       
-      t_asc <- df_assoc$Time
-      out <- ode(y = state, times = t_asc, func = bivalentAnalyte_model, parms = parameters)
-      df_assoc$RU <- out[,3] + out[,4]
       
-      ########### Dissociation ########### 
-      t_dis <- c(t_asc[length(t_asc)], df_dissoc$Time)
+      t_pred_asc <- NULL
+      asc_indicator <- df_assoc$AssocIndicator
+      t_stars <- pars[param_names == "t_star"]
+      t_star <- t_stars[i]
+      if (t_star != 0){
+        t0 <- df_assoc$Time[1] - t_star
+        # t0 <- floor(t0)
+        t_pred_asc <- seq(from = t0, df_assoc$Time[1]-1, by = 1)
+        # t_pred_asc <- t_pred_asc - t0
+        
+        t_asc <- c(t_pred_asc, df_assoc$Time)
+        t_asc <- t_asc - t0
+        
+        asc_indicator <- c(rep(0, length(t_pred_asc)), asc_indicator)
+        
+        out <- ode(y = state, times = t_asc, func = bivalentAnalyte_model, parms = parameters)
+        df_assoc$RU <- out[asc_indicator == 1, 3] + out[asc_indicator == 1, 4] + RI
+      }
+      else{
+        t_asc <- c(t_pred_asc, df_assoc$Time)
+        t_asc <- t_asc - t0
+        
+        asc_indicator <- c(rep(0, length(t_pred_asc)), asc_indicator)
+        
+        out <- ode(y = state, times = t_asc, func = bivalentAnalyte_model, parms = parameters)
+        df_assoc$RU <- out[asc_indicator == 1, 3] + out[asc_indicator == 1, 4] + RI
+      }
+      
+      
+      
+      
+      # Dissociation
+      t_dis <- c(t_asc[length(t_asc)], df_dissoc$Time - t0)
       
       if (use_secondRebind == "Y"){
         parameters <- c(ka1 = ka1,
@@ -473,9 +493,9 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
                         Am = 0)
       }
       else{
-        parameters <- c(ka1 = 0,
+        parameters <- c(ka1 = ka1,
                         kd1 = kd1,
-                        ka2 = 0,
+                        ka2 = ka2,
                         kd2 = kd2,
                         Am = 0)
       }
@@ -486,8 +506,7 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
                  out[length(t_asc),4])
       
       out <- ode(y = state, times = t_dis, func = bivalentAnalyte_model, parms = parameters)
-      df_dissoc$RU <- out[2:length(t_dis),3] + out[2:length(t_dis),4]
-      
+      df_dissoc$RU <- out[2:length(t_dis),3] + out[2:length(t_dis),4] + RI
     }
     
     full_output_RU <- bind_rows(full_output_RU, df_assoc, df_dissoc)

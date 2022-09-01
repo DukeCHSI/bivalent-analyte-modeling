@@ -14,15 +14,15 @@ num_cores <- detectCores()/2
 options("scipen"=2, "digits"=3)
 
 # select working directory
-files_directory  <-  rstudioapi::selectDirectory(
-  caption <- "Select Directory",
-  label <- "Select"
-)
+# files_directory  <-  rstudioapi::selectDirectory(
+#   caption <- "Select Directory",
+#   label <- "Select"
+# )
 
-# setwd("~/Summer2022/project/paper_codes")
+setwd("~/Summer2022/project/hiv-summer-2022/")
 
 
-source("paper_codes/functions_forTesting_t0.R") 
+source("paper_codes/functions_forTesting_t0.R")
 #source("~/Google Drive/My Drive/R/HIV_new_data/code/3odes.R")
 #source("~/Google Drive/My Drive/R/HIV_new_data/code/RTFunctions_kyle3.R")
 
@@ -198,9 +198,9 @@ fits_list <- mclapply(X = 1:nwells, FUN = fit_association_dissociation, mc.cores
 
 
 # save(monovalent_fits_list, file="monovalent.Rdata")
-save(fits_list, file="bivalent_oldResults_AL20_gRmax_long.Rdata")
+save(fits_list, file="bivalent_newResults_t0_long.Rdata")
 # load(file='NoBulkshiftShort.Rdata')
-# load(file='bivalent_newResults_long.Rdata')
+load(file='bivalent_newResults_t0_long.Rdata')
 # load(file='bulkshift_long.Rdata')
 
 
@@ -238,7 +238,7 @@ for (well_idx in 1:nwells){
   print(well_idx)
   if (!is.null(plot_bivalent_fit[[well_idx]])){
     grid.arrange(plot_bivalent_fit[[well_idx]])
-    data_file_name <- paste("figures/bivalent_old_long/fitbivalent_old_long",well_idx,".png",sep="")
+    data_file_name <- paste("paper_codes/figures/bivalent_old_long/fitbivalent_old_long",well_idx,".png",sep="")
     ggsave(filename = data_file_name, plot=plot_bivalent_fit[[well_idx]])
   }
 }
@@ -261,7 +261,7 @@ sort_idx <- as_vector(sort_idx)
 pages_list <- map(sort_idx, plot_bivalent_fitting,
                   fits_list, plot_bivalent_fit, sample_info$NumInclConc, rc_list, plot_list_before_baseline)
 
-pdf(file = "figures/bivalent_old_long/Antigen2_out_bivalent_new.pdf")
+pdf(file = "paper_codes/figures/bivalent_old_long/Antigen2_out_bivalent_new.pdf")
 for (well_idx in 1:nwells){
   print(well_idx)
   if (!is.null(pages_list[[well_idx]]$result)){
