@@ -575,10 +575,17 @@ plot_sensorgrams_with_fits <- function(well_idx, sample_info, fits, x_vals, y_va
   #   geom_vline(xintercept = dissociation_start, linetype="dashed",
   #              color = "black", size=1)
   
-  ggplot(df, aes(x = Time, y = RU)) + geom_point(size = 0.09, aes(color = Concentration)) +
+  # ggplot(df, aes(x = Time, y = RU)) + geom_point(size = 0.09, aes(color = Concentration)) +
+  #   ggtitle(ligand_desc, subtitle = sub_title) +
+  #   geom_line(data =  fit_df, aes(x = Time, y = RU, group = Concentration), color = "black", size=1) +
+  #   geom_vline(xintercept = dissociation_start, linetype="dashed", color = "black", size=0.5)
+  ggplot(df, aes(x = Time, y = RU)) + geom_point(size = 1, aes(color = Concentration)) +
+    guides(color = guide_legend(reverse=TRUE, override.aes = list(size = 5))) +
     ggtitle(ligand_desc, subtitle = sub_title) +
-    geom_line(data =  fit_df, aes(x = Time, y = RU, group = Concentration), color = "black", size=1) +
-    geom_vline(xintercept = dissociation_start, linetype="dashed", color = "black", size=0.5)
+    geom_line(data =  fit_df, aes(x = Time, y = RU, group = Concentration), color = "black", size=1.5) +
+    geom_vline(xintercept = dissociation_start, linetype="dashed",
+               color = "black", size=1) +
+    theme(text = element_text(size=20))
 }
 
 
