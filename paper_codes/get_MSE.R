@@ -46,35 +46,35 @@ for (well_idx in 1:nwells){
 }
 
 load(file='bivalent_oldResults_t0_short.Rdata')
-nwells <- length(bivalent_fits_list)
+nwells <- length(fits_list)
 bivalentShort_MSE <- NULL
 for (well_idx in 1:nwells){
-  num_data <- length(bivalent_fits_list[[well_idx]]$R0$fvec)
-  bivalentShort_MSE <- rbind(bivalentShort_MSE, tail(bivalent_fits_list[[well_idx]]$R0$rsstrace, 1)/num_data)
+  num_data <- length(fits_list[[well_idx]]$R0$fvec)
+  bivalentShort_MSE <- rbind(bivalentShort_MSE, tail(fits_list[[well_idx]]$R0$rsstrace, 1)/num_data)
 }
 
 load(file='bivalent_oldResults_t0_long.Rdata')
-nwells <- length(bivalent_fits_list)
+nwells <- length(fits_list)
 bivalentLong_MSE <- NULL
 for (well_idx in 1:nwells){
-  num_data <- length(bivalent_fits_list[[well_idx]]$R0$fvec)
-  bivalentLong_MSE <- rbind(bivalentLong_MSE, tail(bivalent_fits_list[[well_idx]]$R0$rsstrace, 1)/num_data)
+  num_data <- length(fits_list[[well_idx]]$R0$fvec)
+  bivalentLong_MSE <- rbind(bivalentLong_MSE, tail(fits_list[[well_idx]]$R0$rsstrace, 1)/num_data)
 }
 
 load(file='bivalent_newResults_t0_short.Rdata')
-nwells <- length(bivalent_fits_list)
+nwells <- length(fits_list)
 bivalentShort_MSE_new <- NULL
 for (well_idx in 1:nwells){
-  num_data <- length(bivalent_fits_list[[well_idx]]$R0$fvec)
-  bivalentShort_MSE_new <- rbind(bivalentShort_MSE_new, tail(bivalent_fits_list[[well_idx]]$R0$rsstrace, 1)/num_data)
+  num_data <- length(fits_list[[well_idx]]$R0$fvec)
+  bivalentShort_MSE_new <- rbind(bivalentShort_MSE_new, tail(fits_list[[well_idx]]$R0$rsstrace, 1)/num_data)
 }
 
 load(file='bivalent_newResults_t0_long.Rdata')
-nwells <- length(bivalent_fits_list)
+nwells <- length(fits_list)
 bivalentLong_MSE_new <- NULL
 for (well_idx in 1:nwells){
-  num_data <- length(bivalent_fits_list[[well_idx]]$R0$fvec)
-  bivalentLong_MSE_new <- rbind(bivalentLong_MSE_new, tail(bivalent_fits_list[[well_idx]]$R0$rsstrace, 1)/num_data)
+  num_data <- length(fits_list[[well_idx]]$R0$fvec)
+  bivalentLong_MSE_new <- rbind(bivalentLong_MSE_new, tail(fits_list[[well_idx]]$R0$rsstrace, 1)/num_data)
 }
 
 
