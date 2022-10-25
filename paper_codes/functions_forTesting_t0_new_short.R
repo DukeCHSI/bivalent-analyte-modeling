@@ -455,12 +455,10 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
       asc_indicator <- df_assoc$AssocIndicator
       t_stars <- pars[param_names == "t_star"]
       t_star <- t_stars[i]
-      if (t_star != 0){
+      if (t_star >= 1){
         t0 <- df_assoc$Time[1] - t_star
-        # t0 <- floor(t0)
         t_pred_asc <- seq(from = t0, df_assoc$Time[1]-1, by = 1)
-        # t_pred_asc <- t_pred_asc - t0
-        
+
         t_asc <- c(t_pred_asc, df_assoc$Time)
         t_asc <- t_asc - t0
         
@@ -470,6 +468,7 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
         df_assoc$RU <- out[asc_indicator == 1, 3] + out[asc_indicator == 1, 4] + RI
       }
       else{
+        t0 <- df_assoc$Time[1]
         t_asc <- c(t_pred_asc, df_assoc$Time)
         t_asc <- t_asc - t0
         
@@ -1441,8 +1440,8 @@ plot_sensorgrams <- function(well_idx, sample_info, x_vals, y_vals,
     ggtitle(ligand_desc, subtitle = sub_title) + 
     geom_vline(xintercept = 420, linetype="dashed", 
                color = "black", size=1) + 
-    geom_vline(xintercept = 120, linetype="dashed", 
-               color = "grey50", size=1) +
+    geom_vline(xintercept = 120, 
+               color = "black", size=1) +
     theme(text = element_text(size=20))
 }
 

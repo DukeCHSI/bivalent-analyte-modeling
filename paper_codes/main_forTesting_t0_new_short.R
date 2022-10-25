@@ -140,15 +140,15 @@ plot_list_before_baseline <- map(.x = 1:nwells, .f = plot_sensorgrams, sample_in
                                  all_concentrations_values,
                                  n_time_points, all = TRUE)
 
-# for (well_idx in 1:nwells){
-#   print(well_idx)
-#   if (!is.null(plot_list_before_baseline[[well_idx]])){
-#     grid.arrange(plot_list_before_baseline[[well_idx]])
-#     data_file_name <- paste("figures/data/data",well_idx,".png",sep="")
-#     ggsave(filename = data_file_name, plot=plot_list_before_baseline[[well_idx]])
-#   }
-# }
-# dev.off()
+for (well_idx in 1:nwells){
+  print(well_idx)
+  if (!is.null(plot_list_before_baseline[[well_idx]])){
+    grid.arrange(plot_list_before_baseline[[well_idx]])
+    data_file_name <- paste("paper_codes/figures/data/data",well_idx,".png",sep="")
+    ggsave(filename = data_file_name, plot=plot_list_before_baseline[[well_idx]])
+  }
+}
+dev.off()
 
 #plot_list_before_baseline_sorted <- plot_list_before_baseline[sort_idx]
 

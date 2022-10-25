@@ -234,8 +234,8 @@ fit_association_dissociation <- function(well_idx, sample_info, x_vals, y_vals,
         solved_success <- FALSE
       }
     )
-    
-    
+
+
     if (solved_success == TRUE){
       estimated_fval <- rbind(estimated_fval, res_R0$deviance)
       estimated_params_list <- rbind(estimated_params_list, coefficients(res_R0))
@@ -247,7 +247,7 @@ fit_association_dissociation <- function(well_idx, sample_info, x_vals, y_vals,
       estimated_params_list <- rbind(estimated_params_list, init_params)
       error_val <- res_R0$deviance
     }
-    
+
     if (error_val < best_error){
       best_res_R0 <- res_R0
       best_error <- error_val
@@ -257,8 +257,8 @@ fit_association_dissociation <- function(well_idx, sample_info, x_vals, y_vals,
   
   full_param_table <- cbind(init_params_list, estimated_params_list, estimated_fval)
   full_param_table <- full_param_table %>% as_tibble() #&>& setNames()
-  write_csv(full_param_table, paste('~/Summer2022/project/hiv-summer-2022/paper_codes/param_table_old/full_param',as.character(well_idx),'.csv',sep=''))
-  
+  write_csv(full_param_table, paste('~/Summer2022/project/hiv-summer-2022/paper_codes/param_table_old_long2/full_param',as.character(well_idx),'.csv',sep=''))
+  # 
   # kd_param_table <- as.matrix(full_param_table[,c(1:4,7:12,23)])
   # kd_param_table <- kd_param_table %>% as_tibble() %>% setNames(c("ka1_0", "ka2_0", "kd1_0", "kd2_0", "ka1", "ka2", "kd1", "kd2", "SSE"))
   # write_csv(kd_param_table, paste('~/Summer2022/project/paper_codes/param_table_old/k_param',
@@ -455,12 +455,10 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
       asc_indicator <- df_assoc$AssocIndicator
       t_stars <- pars[param_names == "t_star"]
       t_star <- t_stars[i]
-      if (t_star != 0){
+      if (t_star >= 1){
         t0 <- df_assoc$Time[1] - t_star
-        # t0 <- floor(t0)
         t_pred_asc <- seq(from = t0, df_assoc$Time[1]-1, by = 1)
-        # t_pred_asc <- t_pred_asc - t0
-        
+
         t_asc <- c(t_pred_asc, df_assoc$Time)
         t_asc <- t_asc - t0
         
@@ -470,6 +468,7 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
         df_assoc$RU <- out[asc_indicator == 1, 3] + out[asc_indicator == 1, 4] + RI
       }
       else{
+        t0 <- df_assoc$Time[1]
         t_asc <- c(t_pred_asc, df_assoc$Time)
         t_asc <- t_asc - t0
         
@@ -563,10 +562,10 @@ plot_sensorgrams_with_fits <- function(well_idx, sample_info, fits, x_vals, y_va
   
   df$Concentration <- as_factor(df$Concentration)
   
-  sub_title <- paste("Bivalent Analyte Model-1 with Extended Length of Dissociation")
-  # sub_title <- paste("Block", sample_info[well_idx,]$Block, "Row",
-  #                    sample_info[well_idx,]$Row,
-  #                    "Column", sample_info[well_idx,]$Column)
+  # sub_title <- paste("Bivalent Analyte Model with Extended Length of Dissociation")
+  sub_title <- paste("Block", sample_info[well_idx,]$Block, "Row",
+                     sample_info[well_idx,]$Row,
+                     "Column", sample_info[well_idx,]$Column)
   
   dissociation_start <- sample_info$Baseline[[well_idx]] + sample_info$`Bsl Start`[[well_idx]] + sample_info$Association[[well_idx]]
   
@@ -575,17 +574,17 @@ plot_sensorgrams_with_fits <- function(well_idx, sample_info, fits, x_vals, y_va
   #   geom_vline(xintercept = dissociation_start, linetype="dashed",
   #              color = "black", size=1)
   
-  # ggplot(df, aes(x = Time, y = RU)) + geom_point(size = 0.09, aes(color = Concentration)) +
-  #   ggtitle(ligand_desc, subtitle = sub_title) +
-  #   geom_line(data =  fit_df, aes(x = Time, y = RU, group = Concentration), color = "black", size=1) +
-  #   geom_vline(xintercept = dissociation_start, linetype="dashed", color = "black", size=0.5)
-  ggplot(df, aes(x = Time, y = RU)) + geom_point(size = 1, aes(color = Concentration)) +
-    guides(color = guide_legend(reverse=TRUE, override.aes = list(size = 5))) +
+  ggplot(df, aes(x = Time, y = RU)) + geom_point(size = 0.09, aes(color = Concentration)) +
     ggtitle(ligand_desc, subtitle = sub_title) +
-    geom_line(data =  fit_df, aes(x = Time, y = RU, group = Concentration), color = "black", size=1.5) +
-    geom_vline(xintercept = dissociation_start, linetype="dashed",
-               color = "black", size=1) +
-    theme(text = element_text(size=20))
+    geom_line(data =  fit_df, aes(x = Time, y = RU, group = Concentration), color = "black", size=1) +
+    geom_vline(xintercept = dissociation_start, linetype="dashed", color = "black", size=0.5)
+  # ggplot(df, aes(x = Time, y = RU)) + geom_point(size = 1, aes(color = Concentration)) +
+  #   guides(color = guide_legend(reverse=TRUE, override.aes = list(size = 5))) +
+  #   ggtitle(ligand_desc, subtitle = sub_title) +
+  #   geom_line(data =  fit_df, aes(x = Time, y = RU, group = Concentration), color = "black", size=1.5) +
+  #   geom_vline(xintercept = dissociation_start, linetype="dashed",
+  #              color = "black", size=1) +
+  #   theme(text = element_text(size=20))
 }
 
 

@@ -1501,8 +1501,10 @@ get_response_curve <- function(well_idx, sample_info, x_vals, y_vals,
   
   ggplot(df_RC, aes(x = Concentration, 
                     y = AverageRU)) + 
-    geom_point(aes(color = Included)) +
+    geom_point(aes(color = Included), size = 5) +
+    guides(color = guide_legend(reverse=TRUE, override.aes = list(size = 5))) +
     geom_line() +
     scale_x_log10() +
-    ggtitle(ligand_desc)
+    ggtitle("Average Response Curve") +
+    theme(text = element_text(size=20))
 }
