@@ -186,7 +186,7 @@ select_samples <- function(sample_info, titration_data, remove_dissociation=NULL
   # time and ru values for selected wells
   x_vals_select <- x_vals[ , keep_concentrations_all]
   y_vals_select <- y_vals[ , keep_concentrations_all]
-
+  
   # if (is.null(remove_dissociation) == FALSE)
   # {
   #   for(i in 1:nsamples){
@@ -832,19 +832,21 @@ plot_sensorgrams <- function(well_idx, sample_info, x_vals, y_vals,
   
   ggplot(df, aes(x = Time, y = RU, color = Concentration)) + geom_point(size = 0.5) +
     guides(color = guide_legend(reverse=TRUE, override.aes = list(size = 5))) +
-    ggtitle(ligand_desc, subtitle = sub_title) + 
-          geom_vline(xintercept = 420, linetype="dashed", 
-                  color = "black", size=1) + 
-          geom_vline(xintercept = 120, linetype="dashed", 
-               color = "grey50", size=1) +
-                  theme(text = element_text(size=20))
+    ggtitle("CH31 mAb binding to CH505 T/F gp120", subtitle = sub_title) + 
+    geom_vline(xintercept = 420, linetype="dashed", 
+               color = "black", size=1) + 
+    geom_vline(xintercept = 120,
+               color = "black", size=1) +
+    theme(text = element_text(size=20)) +
+    labs(color = "Concentration (M)") +
+    ylab("Response Unit (RU)") + xlab("Time (s)")
 }
 
 plot_sensorgrams_with_nobaseline <- function(well_idx, sample_info, x_vals, y_vals, 
-                             incl_conc_values, 
-                             all_concentrations_values,
-                             n_time_points,
-                             all = FALSE){
+                                             incl_conc_values, 
+                                             all_concentrations_values,
+                                             n_time_points,
+                                             all = FALSE){
   if (!all){
     start_idx <- sample_info[well_idx,]$FirstInclConcIdx
     num_conc <- sample_info[well_idx,]$NumInclConc
@@ -934,7 +936,7 @@ combine_output <- function(well_idx, fits_list, plot_list_out,
 }
 
 plot_fitting <- function(well_idx, fits_list, plot_list_out, 
-                           num_conc, rc_list, plot_list_before_baseline){
+                         num_conc, rc_list, plot_list_before_baseline){
   if (!is.null(fits_list[[well_idx]]$error))
     return(NULL)
   num_conc <- num_conc[well_idx]
@@ -969,7 +971,7 @@ plot_fitting <- function(well_idx, fits_list, plot_list_out,
   plot_before_baseline <- plot_list_before_baseline[[well_idx]] + ggtitle("Raw Sensorgram")
   # grid.arrange(plot_list_out[[well_idx]])
   grid.arrange(plot_list_out[[well_idx]], tb1, resid_plot,
-              rc_list[[well_idx]], ncol=2)
+               rc_list[[well_idx]], ncol=2)
 }
 
 summary_fit_with_constraints <- function(fit_object){
@@ -989,12 +991,12 @@ summary_fit_with_constraints <- function(fit_object){
   # get table directly. Code is pulled from summary.nls.lm
   
   # if (info != 5) {            # when info is 5, that means the iterations maxed out and fit is not valid
-    ibb <- chol(hessian)
-    ih <- chol2inv(ibb)
-    p <- length(pars)
-    rdf <- length(fit_object$fvec) - p
-    resvar <- deviance(fit_object)/rdf
-    se <- sqrt(diag(ih) * resvar)
+  ibb <- chol(hessian)
+  ih <- chol2inv(ibb)
+  p <- length(pars)
+  rdf <- length(fit_object$fvec) - p
+  resvar <- deviance(fit_object)/rdf
+  se <- sqrt(diag(ih) * resvar)
   # }
   
   std_err_full[nonsingular_rows] <- se
@@ -1129,7 +1131,7 @@ plot_bivalent_fitting <- function(well_idx, fits_list, plot_list_out,
 }
 
 plot_monovalent_fitting <- function(well_idx, fits_list, plot_list_out, 
-                         num_conc, rc_list, plot_list_before_baseline){
+                                    num_conc, rc_list, plot_list_before_baseline){
   if (!is.null(fits_list[[well_idx]]$error))
     return(NULL)
   num_conc <- num_conc[well_idx]
@@ -1168,7 +1170,7 @@ plot_monovalent_fitting <- function(well_idx, fits_list, plot_list_out,
 }
 
 get_both_tables <- function(well_idx, monovalent_fits_list, bivalent_fits_list, plot_list_out, 
-                                    num_conc, rc_list, plot_list_before_baseline){
+                            num_conc, rc_list, plot_list_before_baseline){
   if (!is.null(monovalent_fits_list[[well_idx]]$error))
     return(NULL)
   if (!is.null(bivalent_fits_list[[well_idx]]$error))
@@ -1177,7 +1179,7 @@ get_both_tables <- function(well_idx, monovalent_fits_list, bivalent_fits_list, 
   num_conc <- num_conc[well_idx]
   Rmax_label <- map_dfr(tibble(1:num_conc), function(x) paste("Rmax", x))
   R0_label <- map_dfr(tibble(1:num_conc), function(x) paste("R_0", x))
-
+  
   # Monovalent
   par_names <- as_vector(flatten(c("ka1", "kd1", Rmax_label, R0_label)))
   
@@ -1234,7 +1236,7 @@ get_both_tables <- function(well_idx, monovalent_fits_list, bivalent_fits_list, 
 
 
 plot_data <- function(well_idx, fits_list, plot_list_out, 
-                         num_conc, rc_list, plot_list_before_baseline){
+                      num_conc, rc_list, plot_list_before_baseline){
   if (!is.null(fits_list[[well_idx]]$error))
     return(NULL)
   num_conc <- num_conc[well_idx]
@@ -1272,7 +1274,7 @@ plot_data <- function(well_idx, fits_list, plot_list_out,
 }
 
 plot_data_highest_conc <- function(well_idx, fits_list, plot_list_out, 
-                      num_conc, rc_list, plot_list_before_baseline){
+                                   num_conc, rc_list, plot_list_before_baseline){
   if (!is.null(fits_list[[well_idx]]$error))
     return(NULL)
   num_conc <- num_conc[well_idx]
@@ -1309,10 +1311,10 @@ plot_data_highest_conc <- function(well_idx, fits_list, plot_list_out,
 }
 
 plot_sensorgrams_highest_conc <- function(well_idx, sample_info, x_vals, y_vals, 
-                             incl_conc_values, 
-                             all_concentrations_values,
-                             n_time_points,
-                             all = FALSE){
+                                          incl_conc_values, 
+                                          all_concentrations_values,
+                                          n_time_points,
+                                          all = FALSE){
   if (!all){
     start_idx <- sample_info[well_idx,]$FirstInclConcIdx
     num_conc <- sample_info[well_idx,]$NumInclConc
@@ -1366,27 +1368,27 @@ plot_sensorgrams_highest_conc <- function(well_idx, sample_info, x_vals, y_vals,
   ggplot(df_highest, aes(x = Time, y = RU, color = Concentration)) + geom_point(size = 0.5) +
     #geom_line(data =  fit_df, aes(x = Time, y = RU, group = Concentration), color = "black", size=1) +
     ggtitle(ligand_desc, subtitle = sub_title) #+ #geom_vline(xintercept = 420, linetype="dashed", 
-                                                 #           color = "black", size=1) + xlim(420,730) + ylim(1, 1.4)
+  #           color = "black", size=1) + xlim(420,730) + ylim(1, 1.4)
 }
 
 plot_fitting_X1X2 <- function(well_idx, fits_list, plot_list_out, 
-                         num_conc, rc_list, plot_list_before_baseline){
+                              num_conc, rc_list, plot_list_before_baseline){
   if (!is.null(fits_list[[well_idx]]$error))
     return(NULL)
   num_conc <- 1:num_conc
   Rmax_label <- map_dfr(tibble(1:1), function(x) paste("Rmax", x))
   R0_label <- map_dfr(tibble(1:1), function(x) paste("R_0", x))
   par_names <- as_vector(flatten(c("ka1", "ka2", "kd1", "kd2",  Rmax_label)))
-
+  
   pars <- coefficients(fits_list[[well_idx]]$R0)
-
+  
   result_summary <- summary(fits_list[[well_idx]]$R0)
   summary_names <- colnames(result_summary$coefficients)
   result_summary$coefficients %>% as_tibble -> par_err_table
-
+  
   colnames(par_err_table) <- summary_names
   par_err_table <- bind_cols(Names = par_names, par_err_table)
-
+  
   par_err_table %>% filter(!str_detect(Names,"R_0")) -> par_err_table
   par_names <- par_err_table$Names
   par_err_table %>% select(Estimate, `Std. Error`)  %>%
@@ -1405,7 +1407,7 @@ plot_fitting_X1X2 <- function(well_idx, fits_list, plot_list_out,
   RUdata <- plot_list_before_baseline[[well_idx]]$data$RU
   Timedata <- plot_list_before_baseline[[well_idx]]$data$Time
   resid_plot <- ggplot(data = tibble(Residuals = RU_resid, Time = RU),
-                      aes(x = RU, y = Residuals)) + geom_point(size = 0.01, color='black') +
+                       aes(x = RU, y = Residuals)) + geom_point(size = 0.01, color='black') +
     ggtitle(label = "Residuals")
   
   plot_before_baseline <- plot_list_before_baseline[[well_idx]] + ggtitle("Raw Sensorgram")
@@ -1426,7 +1428,7 @@ plot_fitting_X1X2 <- function(well_idx, fits_list, plot_list_out,
   
   # grid.arrange(sim_plot)
   grid.arrange(sim_plot, tb1, resid_plot,
-              rc_list[[well_idx]], ncol=2)
+               rc_list[[well_idx]], ncol=2)
 }
 
 
@@ -1506,5 +1508,6 @@ get_response_curve <- function(well_idx, sample_info, x_vals, y_vals,
     geom_line() +
     scale_x_log10() +
     ggtitle("Average Response Curve") +
-    theme(text = element_text(size=20))
+    theme(text = element_text(size=20)) +
+    xlab("Concentration (M)") + ylab("Average Response Unit (RU)")
 }
