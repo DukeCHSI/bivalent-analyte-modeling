@@ -25,10 +25,10 @@ process_sample_sheet <- function(sample_sheet_path, rows_dict, sort_order="PairR
     if (is.na(end_letter))
       end_letter <- start_letter
     
-    ####################################################################### For cases, A1B2??? How would it look like?
+    ####################################################################### 
     if(start_letter != end_letter) {
-      start_idx <- which(LETTERS == start_letter) #                         Was LETTERS defined somewhere?                        
-      end_idx <- which(LETTERS == end_letter)     #                         start_letter, end_letteer?      
+      start_idx <- which(LETTERS == start_letter)             
+      end_idx <- which(LETTERS == end_letter)    
       for (j in start_idx+1:(end_idx-1)){
         new_row <- old_row
         new_row$Row <- LETTERS[j]
@@ -135,7 +135,6 @@ select_samples <- function(sample_info, titration_data, remove_dissociation=NULL
   remove_ligands <- which(sample_info$Incl. == "N")
   keep_ligands <- which(sample_info$Incl. == "Y")
   
-  ####################################################################### -starts_with("X"): What does "-" do?
   titration_data %>% select(everything(), -starts_with("Y")) -> x_vals
   titration_data %>% select(everything(), -starts_with("X")) -> y_vals
   
@@ -196,7 +195,7 @@ select_samples <- function(sample_info, titration_data, remove_dissociation=NULL
   # }
   
   sample_info <- sample_info[keep_ligands, ]
-  sample_info$NumConc <- all_concentrations_ligand  ############################# Why do we include all concentration ligand?
+  sample_info$NumConc <- all_concentrations_ligand
   
   list(Time = x_vals_select, RU = y_vals_select, 
        sample_info = sample_info,
@@ -1508,6 +1507,6 @@ get_response_curve <- function(well_idx, sample_info, x_vals, y_vals,
     geom_line() +
     scale_x_log10() +
     ggtitle("Average Response Curve") +
-    theme(text = element_text(size=20)) +
+    # theme(text = element_text(size=20)) +
     xlab("Concentration (M)") + ylab("Average Response Unit (RU)")
 }

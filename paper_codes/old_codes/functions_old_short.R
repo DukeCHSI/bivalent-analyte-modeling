@@ -14,6 +14,7 @@ bivalentAnalyte_model <- function(t, state, parameters){
 }
 
 objective_function <- function(pars, df, incl_concentrations, num_conc, param_names, 
+                               use_RI,
                                use_regeneration, 
                                model, 
                                use_globalRmax,
@@ -43,7 +44,8 @@ objective_function <- function(pars, df, incl_concentrations, num_conc, param_na
       # Your code...
       # goes here...
       # ...
-      sim_results <- run_model(pars, df, num_conc, incl_concentrations, param_names, 
+      sim_results <- run_model(pars, df, num_conc, incl_concentrations, param_names,
+                               use_RI,
                                use_regeneration, 
                                model, 
                                use_globalRmax,
@@ -130,7 +132,7 @@ fit_association_dissociation <- function(well_idx, sample_info, x_vals, y_vals,
   use_globalRmax <- "N"
   use_bulkShift <- "N"
   use_regeneration <- "Y" #sample_info[well_idx,]$Regen.
-  
+  use_RI <- "N"
   # model <- sample_info[well_idx,]$Model
   model <- 'bivalentAnalyte_tstar'
   
@@ -149,7 +151,7 @@ fit_association_dissociation <- function(well_idx, sample_info, x_vals, y_vals,
     num_Rmax <- 1
   }
   
-  if (use_regeneration == "N"){
+  if (use_RI == "Y"){
     num_R0 <- num_conc
     init_R0s <- R0_start$min
   }
@@ -158,13 +160,20 @@ fit_association_dissociation <- function(well_idx, sample_info, x_vals, y_vals,
     init_R0s <- NULL
   }
   
+  if (use_regeneration == "N"){
+    num_tstar <- num_conc
+  }
+  else{
+    num_tstar <- 0
+  }
+  
   if (model == 'bivalentAnalyte'){
-    lower <- c(0, 0, 0, 0, rep(0, num_Rmax), rep(0, num_R0), rep(0, num_conc))
-    param_names <- c("ka1", "ka2", "kd1", "kd2", rep("Rmax", num_Rmax), rep('t_star', num_conc))
+    lower <- c(0, 0, 0, 0, rep(0, num_Rmax), rep(0, num_R0), rep(0, num_tstar))
+    param_names <- c("ka1", "ka2", "kd1", "kd2", rep("Rmax", num_Rmax), rep('R0', num_R0), rep('t_star', num_tstar))
   }
   else if (model == 'bivalentAnalyte_tstar'){
-    lower <- c(0, 0, 0, 0, rep(0, num_Rmax), rep(0, num_R0), rep(0, num_conc))
-    param_names <- c("ka1", "ka2", "kd1", "kd2", rep("Rmax", num_Rmax), rep('t_star', num_conc))
+    lower <- c(0, 0, 0, 0, rep(0, num_Rmax), rep(0, num_R0), rep(0, num_tstar))
+    param_names <- c("ka1", "ka2", "kd1", "kd2", rep("Rmax", num_Rmax), rep('R0', num_R0), rep('t_star', num_tstar))
   }
   
   ka1_IGs <- c(1e2, 1e3, 1e4)
@@ -179,7 +188,9 @@ fit_association_dissociation <- function(well_idx, sample_info, x_vals, y_vals,
     for (ka2_IG in ka2_IGs){
       for (kd1_IG in kd1_IGs){
         for (kd2_IG in kd2_IGs){
-          temp_IGs <- c(ka1_IG, ka2_IG, kd1_IG, kd2_IG, max(Rmax_start$max)*rep(1, num_Rmax), runif(num_conc, min=0, max=120))
+          # Kinetics parameters, Global/local Rmaxs, Refractive index, Non-regenerative
+          # (ka1, ka2, kd1, kd2), (Rmax's), (R0s), (tstar)
+          temp_IGs <- c(ka1_IG, ka2_IG, kd1_IG, kd2_IG, max(Rmax_start$max)*rep(1, num_Rmax), init_R0s, runif(num_tstar, min=0, max=120))
           init_params_list <- rbind(init_params_list, temp_IGs)
         }
       }
@@ -199,43 +210,41 @@ fit_association_dissociation <- function(well_idx, sample_info, x_vals, y_vals,
   
   num_run <- dim(init_params_list)[1] #Esample_info[well_idx,]$`Num Run`
   
-  # num_run <- 2
-  # init_params_list <- init_params_list[1:num_run,]
-  
   for (i in 1:num_run){
-    
+
     init_params <- init_params_list[i,]
-    
+
     print("Initial Params:")
     print(init_params)
-    
+
     tryCatch(
       expr = {
         # Your code...
         # goes here...
         # ...
-        
+
         res_R0 <- nls.lm(init_params, fn = objective_function, df = df,
-                         incl_concentrations = incl_concentrations, num_conc = num_conc, 
+                         incl_concentrations = incl_concentrations, num_conc = num_conc,
                          param_names = param_names,
+                         use_RI = use_RI,
                          use_regeneration = use_regeneration, model = model, use_globalRmax = use_globalRmax,
                          use_secondRebind = use_secondRebind,
                          fixed_info = fixed_info,
                          control = nls.lm.control(maxiter = 1000),
                          lower = lower)
-        
+
         print("Estimated Params:")
         print(coefficients(res_R0))
-        
-        
+
+
         solved_success <- TRUE
       },
       error = function(cond){
         solved_success <- FALSE
       }
     )
-    
-    
+
+
     if (solved_success == TRUE){
       estimated_fval <- rbind(estimated_fval, res_R0$deviance)
       estimated_params_list <- rbind(estimated_params_list, coefficients(res_R0))
@@ -247,40 +256,42 @@ fit_association_dissociation <- function(well_idx, sample_info, x_vals, y_vals,
       estimated_params_list <- rbind(estimated_params_list, init_params)
       error_val <- res_R0$deviance
     }
-    
+
     if (error_val < best_error){
       best_res_R0 <- res_R0
       best_error <- error_val
     }
     solved_success <- FALSE
   }
-  
+
   full_param_table <- cbind(init_params_list, estimated_params_list, estimated_fval)
   full_param_table <- full_param_table %>% as_tibble() #&>& setNames()
-  write_csv(full_param_table, paste('~/Summer2022/project/hiv-summer-2022/paper_codes/param_table_old_long/full_param',as.character(well_idx),'.csv',sep=''))
-  # 
+  write_csv(full_param_table, paste('~/Summer2022/project/hiv-summer-2022/paper_codes/param_table_old_short2/full_param',as.character(well_idx),'.csv',sep=''))
+
   # kd_param_table <- as.matrix(full_param_table[,c(1:4,7:12,23)])
   # kd_param_table <- kd_param_table %>% as_tibble() %>% setNames(c("ka1_0", "ka2_0", "kd1_0", "kd2_0", "ka1", "ka2", "kd1", "kd2", "SSE"))
   # write_csv(kd_param_table, paste('~/Summer2022/project/paper_codes/param_table_old/k_param',
   #                                 as.character(well_idx),'.csv',
   #                                 sep=''))
-  
+
   time_end <- Sys.time()
   elapsed_time <- time_end - time_start
   print("Time:")
   print(elapsed_time)
-  
+
   pars <- coefficients(best_res_R0)
   print("Best Params:")
   print(pars)
-  # load(file='Results_2Fixed_FixedRmax.Rdata')
+
   
-  
-  # pars <- fits_list[[well_idx]]$R0
-  
+  # load(file='bivalent_oldResults_t0_short2_nonRegen.Rdata')
+  # pars <- fits_list[[well_idx]]$R0$par
+  # best_res_R0 <- fits_list[[well_idx]]$R0
+    
   fit_outcomes <- run_model(pars, df, num_conc,
                             incl_concentrations,
                             param_names,
+                            use_RI,
                             use_regeneration,
                             model,
                             use_globalRmax,
@@ -293,6 +304,7 @@ fit_association_dissociation <- function(well_idx, sample_info, x_vals, y_vals,
 
 
 run_model <- function(pars, df, num_conc, incl_concentrations, param_names, 
+                      use_RI,
                       use_regeneration, 
                       model, 
                       use_globalRmax,
@@ -337,7 +349,7 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
                    X2 = 0)
       }
       
-      if (use_regeneration == "N"){
+      if (use_RI == "N"){
         RIs <- pars[param_names == "R0"]
         RI <- RIs[i]
       }else{
@@ -421,8 +433,6 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
       
       num_pars <- 4
       
-      
-      
       if (use_globalRmax == "N"){
         state <- c(L  = Rmaxs[i],
                    X1 = 0,
@@ -434,7 +444,7 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
                    X2 = 0)
       }
       
-      if (use_regeneration == "N"){
+      if (use_RI == "Y"){
         RIs <- pars[param_names == "R0"]
         RI <- RIs[i]
       }
@@ -442,44 +452,49 @@ run_model <- function(pars, df, num_conc, incl_concentrations, param_names,
         RI <- 0
       }
       
-      
       # Association
       parameters <- c(ka1 = ka1,
                       kd1 = kd1,
                       ka2 = ka2,
                       kd2 = kd2,
                       Am = incl_concentrations[i])
-      
-      
-      t_pred_asc <- NULL
       asc_indicator <- df_assoc$AssocIndicator
-      t_stars <- pars[param_names == "t_star"]
-      t_star <- t_stars[i]
-      if (t_star >= 1){
-        t0 <- df_assoc$Time[1] - t_star
-        t_pred_asc <- seq(from = t0, df_assoc$Time[1]-1, by = 1)
-        
-        t_asc <- c(t_pred_asc, df_assoc$Time)
-        t_asc <- t_asc - t0
-        
-        asc_indicator <- c(rep(0, length(t_pred_asc)), asc_indicator)
-        
-        out <- ode(y = state, times = t_asc, func = bivalentAnalyte_model, parms = parameters)
-        df_assoc$RU <- out[asc_indicator == 1, 3] + out[asc_indicator == 1, 4] + RI
+      
+      if (use_regeneration == "N"){
+        t_pred_asc <- NULL
+        t_stars <- pars[param_names == "t_star"]
+        t_star <- t_stars[i]
+        if (t_star >= 1){
+          t0 <- df_assoc$Time[1] - t_star
+          t_pred_asc <- seq(from = t0, df_assoc$Time[1]-1, by = 1)
+          
+          t_asc <- c(t_pred_asc, df_assoc$Time)
+          t_asc <- t_asc - t0
+          
+          asc_indicator <- c(rep(0, length(t_pred_asc)), asc_indicator)
+          
+          out <- ode(y = state, times = t_asc, func = bivalentAnalyte_model, parms = parameters)
+          df_assoc$RU <- out[asc_indicator == 1, 3] + out[asc_indicator == 1, 4] + RI
+        }
+        else{
+          t0 <- df_assoc$Time[1]
+          t_asc <- c(t_pred_asc, df_assoc$Time)
+          t_asc <- t_asc - t0
+          
+          asc_indicator <- c(rep(0, length(t_pred_asc)), asc_indicator)
+          
+          out <- ode(y = state, times = t_asc, func = bivalentAnalyte_model, parms = parameters)
+          df_assoc$RU <- out[asc_indicator == 1, 3] + out[asc_indicator == 1, 4] + RI
+        }
       }
       else{
         t0 <- df_assoc$Time[1]
-        t_asc <- c(t_pred_asc, df_assoc$Time)
+        t_asc <- df_assoc$Time
         t_asc <- t_asc - t0
         
-        asc_indicator <- c(rep(0, length(t_pred_asc)), asc_indicator)
-        
         out <- ode(y = state, times = t_asc, func = bivalentAnalyte_model, parms = parameters)
-        df_assoc$RU <- out[asc_indicator == 1, 3] + out[asc_indicator == 1, 4] + RI
+        df_assoc$RU <- out[, 3] + out[, 4] + RI
       }
-      
-      
-      
       
       # Dissociation
       t_dis <- c(t_asc[length(t_asc)], df_dissoc$Time - t0)
@@ -562,7 +577,7 @@ plot_sensorgrams_with_fits <- function(well_idx, sample_info, fits, x_vals, y_va
   
   df$Concentration <- as_factor(df$Concentration)
   
-  sub_title <- paste("Bivalent Analyte Model with Extended Length of Dissociation")
+  
   # sub_title <- paste("Block", sample_info[well_idx,]$Block, "Row",
   #                    sample_info[well_idx,]$Row,
   #                    "Column", sample_info[well_idx,]$Column)
@@ -574,13 +589,24 @@ plot_sensorgrams_with_fits <- function(well_idx, sample_info, fits, x_vals, y_va
   #   geom_vline(xintercept = dissociation_start, linetype="dashed",
   #              color = "black", size=1)
   
-  # ggplot(df, aes(x = Time, y = RU)) + geom_point(size = 0.09, aes(color = Concentration)) +
-  #   ggtitle(ligand_desc, subtitle = sub_title) +
-  #   geom_line(data =  fit_df, aes(x = Time, y = RU, group = Concentration), color = "black", size=1) +
-  #   geom_vline(xintercept = dissociation_start, linetype="dashed", color = "black", size=0.5)
+  ### For sensorgrams
+  # sub_title <- paste("Block", sample_info[well_idx,]$Block, "Row",
+  #                    sample_info[well_idx,]$Row,
+  #                    "Column", sample_info[well_idx,]$Column)
+  # ggplot(df, aes(x = Time, y = RU)) + geom_point(size = 1, aes(color = Concentration)) +
+  #   # ggtitle(ligand_desc, subtitle = sub_title) +
+  #   guides(color = guide_legend(reverse=TRUE, override.aes = list(size = 5))) +
+  #   geom_line(data =  fit_df, aes(x = Time, y = RU, group = Concentration), color = "black", size=1.5) +
+  #   geom_vline(xintercept = dissociation_start, linetype="dashed", color = "black", size=1) +
+  #   theme(text = element_text(size=10)) +
+  #   labs(color = "Concentration (M)") +
+  #   ylab("Response Unit (RU)") + xlab("Time (s)")
+  
+  ### For manuscript plots
+  sub_title <- paste("Bivalent Analyte Model with Standard Length of Dissociation")
   ggplot(df, aes(x = Time, y = RU)) + geom_point(size = 1, aes(color = Concentration)) +
     guides(color = guide_legend(reverse=TRUE, override.aes = list(size = 5))) +
-    ggtitle("CH31 mAb binding to CH505 T/F gp120", subtitle = sub_title) +
+    # ggtitle("CH31 mAb binding to CH505 T/F gp120", subtitle = sub_title) +
     geom_line(data =  fit_df, aes(x = Time, y = RU, group = Concentration), color = "black", size=1.5) +
     geom_vline(xintercept = dissociation_start, linetype="dashed",
                color = "black", size=1) +
@@ -1439,7 +1465,7 @@ plot_sensorgrams <- function(well_idx, sample_info, x_vals, y_vals,
   
   ggplot(df, aes(x = Time, y = RU, color = Concentration)) + geom_point(size = 0.5) +
     guides(color = guide_legend(reverse=TRUE, override.aes = list(size = 5))) +
-    ggtitle("CH31 mAb binding to CH505 T/F gp120", subtitle = sub_title) + 
+    ggtitle(ligand_desc, subtitle = sub_title) + 
     geom_vline(xintercept = 420, linetype="dashed", 
                color = "black", size=1) + 
     geom_vline(xintercept = 120, linetype="dashed", 
@@ -1690,89 +1716,89 @@ combine_output <- function(well_idx, fits_list, plot_list_out, rc_list, sample_i
                    rc_list[[well_idx]], ncol=2)
 }
 
-plot_bivalent_fitting <- function(well_idx, fits_list, plot_list_out, 
-                                  num_conc, rc_list, plot_list_before_baseline){
-  if (!is.null(fits_list[[well_idx]]$error))
-    return(NULL)
-  num_conc <- num_conc[well_idx]
-  # Rmax_label <- map_dfr(tibble(1:num_conc), function(x) paste("Rmax", x))
-  R0_label <- map_dfr(tibble(1:num_conc), function(x) paste("t0", x)) # For same Rmax
-  par_names <- as_vector(flatten(c("ka1", "ka2", "kd1", "kd2",  "Rmax", R0_label))) #R0_label "kd2"
-  # par_names <- as_vector(flatten(c("ka1", "ka2", "kd1", "kd2", Rmax_label, R0_label))) #R0_label "kd2"
-  
-  pars <- coefficients(fits_list[[well_idx]]$R0)
-  
-  # result_summary <- summary(fits_list[[well_idx]]$R0)
-  
-  result_summary <- summary_fit_with_constraints(fits_list[[well_idx]]$R0)
-  print(well_idx)
-  summary_names <- colnames(result_summary)
-  
-  # rownames(result_summary) <- par_names
-  
-  result_summary %>% as_tibble -> par_err_table
-  
-  colnames(par_err_table) <- summary_names
-  par_err_table <- bind_cols(Names = par_names, par_err_table)
-  
-  # par_err_table %>% filter(!str_detect(Names,"R_0")) -> par_err_table
-  par_names <- par_err_table$Names
-  par_err_table %>% select(Estimate, `Std. Error`)  %>%
-    mutate(Estimate = format(Estimate,big.mark=",",decimal.mark=".")) %>%
-    tableGrob(rows = par_names, theme = ttheme_minimal()) -> tb1
-  
-  residuals(fits_list[[well_idx]]$R0) -> RU_resid
-  fits_list[[well_idx]]$FitOutcomes$Time -> Time_resid
-  fits_list[[well_idx]]$FitOutcomes$RU -> RU
-  fits_list[[well_idx]]$FitOutcomes$Concentration -> Concentration
-  resid_plot <- ggplot(data = tibble(Residuals = RU_resid, Time = RU, Concentration = as.factor(Concentration)), 
-                       aes(x = RU, y = Residuals)) + geom_point(size = 0.01, aes(color = Concentration)) +
-    ggtitle(label = "Residuals")
-  
-  plot_before_baseline <- plot_list_before_baseline[[well_idx]] + ggtitle("Raw Sensorgram")
-  # grid.arrange(plot_list_out[[well_idx]])
-  grid.arrange(plot_list_out[[well_idx]], tb1, resid_plot,
-               rc_list[[well_idx]], ncol=2)
-}
+# plot_bivalent_fitting <- function(well_idx, fits_list, plot_list_out, 
+#                                   num_conc, rc_list, plot_list_before_baseline){
+#   if (!is.null(fits_list[[well_idx]]$error))
+#     return(NULL)
+#   num_conc <- num_conc[well_idx]
+#   # Rmax_label <- map_dfr(tibble(1:num_conc), function(x) paste("Rmax", x))
+#   R0_label <- map_dfr(tibble(1:num_conc), function(x) paste("t0", x)) # For same Rmax
+#   par_names <- as_vector(flatten(c("ka1", "ka2", "kd1", "kd2",  "Rmax", R0_label))) #R0_label "kd2"
+#   # par_names <- as_vector(flatten(c("ka1", "ka2", "kd1", "kd2", Rmax_label, R0_label))) #R0_label "kd2"
+#   
+#   pars <- coefficients(fits_list[[well_idx]]$R0)
+#   
+#   # result_summary <- summary(fits_list[[well_idx]]$R0)
+#   
+#   result_summary <- summary_fit_with_constraints(fits_list[[well_idx]]$R0)
+#   print(well_idx)
+#   summary_names <- colnames(result_summary)
+#   
+#   # rownames(result_summary) <- par_names
+#   
+#   result_summary %>% as_tibble -> par_err_table
+#   
+#   colnames(par_err_table) <- summary_names
+#   par_err_table <- bind_cols(Names = par_names, par_err_table)
+#   
+#   # par_err_table %>% filter(!str_detect(Names,"R_0")) -> par_err_table
+#   par_names <- par_err_table$Names
+#   par_err_table %>% select(Estimate, `Std. Error`)  %>%
+#     mutate(Estimate = format(Estimate,big.mark=",",decimal.mark=".")) %>%
+#     tableGrob(rows = par_names, theme = ttheme_minimal()) -> tb1
+#   
+#   residuals(fits_list[[well_idx]]$R0) -> RU_resid
+#   fits_list[[well_idx]]$FitOutcomes$Time -> Time_resid
+#   fits_list[[well_idx]]$FitOutcomes$RU -> RU
+#   fits_list[[well_idx]]$FitOutcomes$Concentration -> Concentration
+#   resid_plot <- ggplot(data = tibble(Residuals = RU_resid, Time = RU, Concentration = as.factor(Concentration)), 
+#                        aes(x = RU, y = Residuals)) + geom_point(size = 0.01, aes(color = Concentration)) +
+#     ggtitle(label = "Residuals")
+#   
+#   plot_before_baseline <- plot_list_before_baseline[[well_idx]] + ggtitle("Raw Sensorgram")
+#   # grid.arrange(plot_list_out[[well_idx]])
+#   grid.arrange(plot_list_out[[well_idx]], tb1, resid_plot,
+#                rc_list[[well_idx]], ncol=2)
+# }
 
-plot_monovalent_fitting <- function(well_idx, fits_list, plot_list_out, 
-                                    num_conc, rc_list, plot_list_before_baseline){
-  if (!is.null(fits_list[[well_idx]]$error))
-    return(NULL)
-  num_conc <- num_conc[well_idx]
-  Rmax_label <- map_dfr(tibble(1:num_conc), function(x) paste("Rmax", x))
-  R0_label <- map_dfr(tibble(1:num_conc), function(x) paste("R_0", x))
-  # par_names <- as_vector(flatten(c("ka1", "ka2", "kd1", "kd2",  Rmax_label, R0_label))) #R0_label "kd2"
-  par_names <- as_vector(flatten(c("ka1", "kd1", Rmax_label, R0_label))) #R0_label "kd2"
-  
-  pars <- coefficients(fits_list[[well_idx]]$R0)
-  
-  result_summary <- summary(fits_list[[well_idx]]$R0)
-  summary_names <- colnames(result_summary$coefficients)
-  result_summary$coefficients %>% as_tibble -> par_err_table
-  
-  colnames(par_err_table) <- summary_names
-  par_err_table <- bind_cols(Names = par_names, par_err_table)
-  
-  par_err_table %>% filter(!str_detect(Names,"R_0")) -> par_err_table
-  par_names <- par_err_table$Names
-  par_err_table %>% select(Estimate, `Std. Error`)  %>%
-    mutate(Estimate = format(Estimate,big.mark=",",decimal.mark=".")) %>%
-    tableGrob(rows = par_names, theme = ttheme_minimal()) -> tb1
-  
-  residuals(fits_list[[well_idx]]$R0) -> RU_resid
-  fits_list[[well_idx]]$FitOutcomes$Time -> Time_resid
-  fits_list[[well_idx]]$FitOutcomes$RU -> RU
-  fits_list[[well_idx]]$FitOutcomes$Concentration -> Concentration
-  resid_plot <- ggplot(data = tibble(Residuals = RU_resid, Time = RU, Concentration = as.factor(Concentration)), 
-                       aes(x = RU, y = Residuals)) + geom_point(size = 0.01, aes(color = Concentration)) +
-    ggtitle(label = "Residuals")
-  
-  plot_before_baseline <- plot_list_before_baseline[[well_idx]] + ggtitle("Raw Sensorgram")
-  # grid.arrange(plot_list_out[[well_idx]])
-  grid.arrange(plot_list_out[[well_idx]], tb1, resid_plot,
-               rc_list[[well_idx]], ncol=2)
-}
+# plot_monovalent_fitting <- function(well_idx, fits_list, plot_list_out, 
+#                                     num_conc, rc_list, plot_list_before_baseline){
+#   if (!is.null(fits_list[[well_idx]]$error))
+#     return(NULL)
+#   num_conc <- num_conc[well_idx]
+#   Rmax_label <- map_dfr(tibble(1:num_conc), function(x) paste("Rmax", x))
+#   R0_label <- map_dfr(tibble(1:num_conc), function(x) paste("R_0", x))
+#   # par_names <- as_vector(flatten(c("ka1", "ka2", "kd1", "kd2",  Rmax_label, R0_label))) #R0_label "kd2"
+#   par_names <- as_vector(flatten(c("ka1", "kd1", Rmax_label, R0_label))) #R0_label "kd2"
+#   
+#   pars <- coefficients(fits_list[[well_idx]]$R0)
+#   
+#   result_summary <- summary(fits_list[[well_idx]]$R0)
+#   summary_names <- colnames(result_summary$coefficients)
+#   result_summary$coefficients %>% as_tibble -> par_err_table
+#   
+#   colnames(par_err_table) <- summary_names
+#   par_err_table <- bind_cols(Names = par_names, par_err_table)
+#   
+#   par_err_table %>% filter(!str_detect(Names,"R_0")) -> par_err_table
+#   par_names <- par_err_table$Names
+#   par_err_table %>% select(Estimate, `Std. Error`)  %>%
+#     mutate(Estimate = format(Estimate,big.mark=",",decimal.mark=".")) %>%
+#     tableGrob(rows = par_names, theme = ttheme_minimal()) -> tb1
+#   
+#   residuals(fits_list[[well_idx]]$R0) -> RU_resid
+#   fits_list[[well_idx]]$FitOutcomes$Time -> Time_resid
+#   fits_list[[well_idx]]$FitOutcomes$RU -> RU
+#   fits_list[[well_idx]]$FitOutcomes$Concentration -> Concentration
+#   resid_plot <- ggplot(data = tibble(Residuals = RU_resid, Time = RU, Concentration = as.factor(Concentration)), 
+#                        aes(x = RU, y = Residuals)) + geom_point(size = 0.01, aes(color = Concentration)) +
+#     ggtitle(label = "Residuals")
+#   
+#   plot_before_baseline <- plot_list_before_baseline[[well_idx]] + ggtitle("Raw Sensorgram")
+#   # grid.arrange(plot_list_out[[well_idx]])
+#   grid.arrange(plot_list_out[[well_idx]], tb1, resid_plot,
+#                rc_list[[well_idx]], ncol=2)
+# }
 
 get_both_tables <- function(well_idx, monovalent_fits_list, bivalent_fits_list, plot_list_out, 
                             num_conc, rc_list, plot_list_before_baseline){

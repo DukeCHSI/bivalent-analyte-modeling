@@ -10,7 +10,7 @@ library(deSolve)
 library(reshape)
 
 setwd("~/Summer2022/project/hiv-summer-2022/")
-load(file='bivalent_oldResults_t0_short.Rdata')
+load(file='bivalent_oldResults_t0_short2_nonRegen.Rdata')
 nwells <- length(fits_list)
 
 bivalentShort_pars <- NULL

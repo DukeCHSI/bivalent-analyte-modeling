@@ -10,15 +10,15 @@ library(deSolve)
 library(reshape)
 
 setwd("~/Summer2022/project/hiv-summer-2022/")
-load(file='bivalent_oldResults_t0_short.Rdata')
+load(file='bivalent_oldResults_t0_short2_nonRegen.Rdata')
 nwells <- length(fits_list)
 
 bivalentShort_pars <- NULL
-
-for (well_idx in 1:nwells){
-  if (!(well_idx == 9) && !(well_idx == 10)){
-  bivalentShort_pars <- rbind(bivalentShort_pars, fits_list[[well_idx]][["R0"]][["par"]][c(1,2,3,4)])
-  }
+well_idc <- 1:14 #list(5,6,7,10,11,12,13)
+for (well_idx in well_idc){
+  # if (!(well_idx == 9) && !(well_idx == 10)){
+    bivalentShort_pars <- rbind(bivalentShort_pars, fits_list[[well_idx]][["R0"]][["par"]][c(1,2,3,4)])
+  # }
 }
 
 bivalentShort_pars <- data.frame(bivalentShort_pars)
@@ -42,12 +42,12 @@ bivalentShort_pars$ParamName <- as.factor(bivalentShort_pars$ParamName)
 title <- paste("Estimated parameters for standard length of dissociation")
 
 plot <- ggplot(bivalentShort_pars, aes(x=ParamName, y=Value, color=ParamName)) + 
-  ggtitle(title) +
+  # ggtitle(title) +
   geom_violin(trim=FALSE, fill='#A4A4A4', color="black") +
   geom_boxplot(width=0.1, color='black') +
   scale_y_continuous(trans = "log10", breaks = c(1e-7, 1e-4, 1e-1, 1e2, 1e5), limits = c(1e-7, 1e5)) +
-  theme(legend.position="none", text = element_text(size=20),
-        axis.title.x=element_blank())
+  # theme(legend.position="none", text = element_text(size=20),
+  #       axis.title.x=element_blank())
 plot
 
 cvShort_ka1 <- sdShort_ka1/meanShort_ka1
@@ -88,7 +88,7 @@ bivalentLong_pars$ParamName <- as.factor(bivalentLong_pars$ParamName)
 
 title <- paste("Estimated parameters for extended length of dissociation")
 plot <- ggplot(bivalentLong_pars, aes(x=ParamName, y=Value, color=ParamName)) + 
-  ggtitle(title) +
+  # ggtitle(title) +
   geom_violin(trim=FALSE, fill='#A4A4A4', color="black") +
   geom_boxplot(width=0.1, color='black') +
   scale_y_continuous(trans = "log10", breaks = c(1e-7, 1e-4, 1e-1, 1e2, 1e5), limits = c(1e-7, 1e5)) +

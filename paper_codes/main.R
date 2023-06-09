@@ -14,25 +14,21 @@ num_cores <- detectCores()/2
 options("scipen"=2, "digits"=3)
 
 # select working directory
-# files_directory  <-  rstudioapi::selectDirectory(
-#   caption <- "Select Directory",
-#   label <- "Select"
-# )
+files_directory  <-  rstudioapi::selectDirectory(
+  caption <- "Select Directory",
+  label <- "Select"
+)
 
-setwd("~/Summer2022/project/hiv-summer-2022/")
+# setwd("~/Summer2022/project/hiv-summer-2022/")
 
-
-# source("paper_codes/functions_forTesting_t0.R")
-#source("~/Google Drive/My Drive/R/HIV_new_data/code/3odes.R")
-#source("~/Google Drive/My Drive/R/HIV_new_data/code/RTFunctions_kyle3.R")
+source(paste(files_directory,"/ode_functions.R",sep=""))
+source(paste(files_directory,"/helper_functions.R",sep=""))
 
 ####### Input Files #############################################
-#sample_sheet_path <- rstudioapi::selectFile(caption = "Select the sample sheet file",
-#                               filter =
-#                               existing = TRUE)
-
-sample_sheet_path <- "paper_data/Bivalent Binding 2nd - CH505 CH31 - info sheet short.csv"
-
+sample_sheet_path <- rstudioapi::selectFile(caption = "Select the sample sheet file",
+                                            filter ="All Files (*)",
+                                            existing = TRUE)
+# sample_sheet_path <- "paper_data/Bivalent Binding 2nd - CH505 CH31 - info sheet.csv"
 sample_sheet <- read_csv(sample_sheet_path)
 
 rows_dict <- list(A = 1, E = 2,
@@ -41,18 +37,11 @@ rows_dict <- list(A = 1, E = 2,
                   D = 7, H = 8)
 
 sample_info <- process_sample_sheet(sample_sheet_path, rows_dict, sort_order = "pairrow")
-#temp <- sample_info$Baseline
-#sample_info$Baseline <- sample_info$`Bsl Start`
-#sample_info$`Bsl Start` <- temp
-#sample_info <- process_sample_sheet(sample_sheet_path)
 
-
-#data_file_path <- rstudioapi::selectFile(caption = "Select the data file",
-#                               filter = "All Files (*)",
-#                               existing = TRUE)
-
-data_file_path <- "paper_data/Bivalent Binding 2nd - CH505 CH31 - new output format.xlsx"
-
+data_file_path <- rstudioapi::selectFile(caption = "Select the data file",
+                                         filter = "All Files (*)",
+                                         existing = TRUE)
+# data_file_path <- "paper_data/Bivalent Binding 2nd - CH505 CH31 - new output format.xlsx"
 titration_data <- read_excel(data_file_path, col_names = TRUE, skip = 2, n_max = 1000)
 
 ####### User preferences #############################################
@@ -125,12 +114,6 @@ sample_info$BaselineIdx <- baseline_info_list$BaselineIdx
 sample_info$BaselineNegative <- baseline_info_list$BaselineNegative
 rm(baseline_info_list)
 ########################################################### 
-# Kyle commented
-#sample_info$WellIdx <- 1:nwells
-#sample_info %>% arrange(Ligand) %>% select(WellIdx) -> sort_idx
-
-#sort_idx <- as_vector(sort_idx)
-########################################################### 
 #want to sort output by ligand name. Need to print this list in order of sort_idx
 #print these for all selected wells
 
@@ -140,21 +123,7 @@ plot_list_before_baseline <- map(.x = 1:nwells, .f = plot_sensorgrams, sample_in
                                  all_concentrations_values,
                                  n_time_points, all = TRUE)
 
-# for (well_idx in 1:nwells){
-#   print(well_idx)
-#   if (!is.null(plot_list_before_baseline[[well_idx]])){
-#     grid.arrange(plot_list_before_baseline[[well_idx]])
-#     data_file_name <- paste("figures/data/data",well_idx,".png",sep="")
-#     ggsave(filename = data_file_name, plot=plot_list_before_baseline[[well_idx]])
-#   }
-# }
-# dev.off()
-
-#plot_list_before_baseline_sorted <- plot_list_before_baseline[sort_idx]
-
-
 # baseline correction - only selected concentrations
-
 RU[, keep_concentrations] <- map_dfc(.x = 1:nwells, .f = baseline_correction,
                                      Time[, keep_concentrations],
                                      RU[, keep_concentrations],
@@ -174,7 +143,7 @@ plot_list <- map(.x = 1:nwells, .f = plot_sensorgrams_with_nobaseline, sample_in
 fixed_sheet <- NULL
 
 ## Fit using non-parallel computing
-bivalent_fits_list <- map(.x = 1:nwells, .f = fit_association_dissociation,
+fits_list <- map(.x = 1:nwells, .f = fit_association_dissociation,
                           sample_info,
                           Time[, keep_concentrations],
                           RU[, keep_concentrations],
@@ -196,36 +165,14 @@ fits_list <- mclapply(X = 1:nwells, FUN = fit_association_dissociation, mc.cores
                       ptol,
                       ftol)
 
-
-# save(monovalent_fits_list, file="monovalent.Rdata")
-save(fits_list, file="bivalent_oldResults_t0_short.Rdata")
-# load(file='NoBulkshiftShort.Rdata')
-load(file='bivalent_oldResults_t0_short.Rdata')
-# load(file='bulkshift_long.Rdata')
-
+save(fits_list, file=paste(files_directory,"/fitting_results/bivalent.Rdata",sep=""))
+load(file=paste(files_directory,'/fitting_results/bivalent.Rdata',sep=""))
 
 ####### Response curve #############################################
 rc_list <- map(.x = 1:nwells, .f = get_response_curve, sample_info, 
                Time, RU,
                all_concentrations_values,
                incl_concentrations_values, n_time_points)
-# # ## Bivalent
-# plot_bivalent_fit <- map(.x = 1:nwells, .f = plot_sensorgrams_with_monovalent_fits,
-#                          sample_info,
-#                          fits_list,
-#                          Time[, keep_concentrations], RU[, keep_concentrations],
-#                          incl_concentrations_values,
-#                          n_time_points)
-# 
-# for (well_idx in 1:nwells){
-#   print(well_idx)
-#   if (!is.null(plot_bivalent_fit[[well_idx]])){
-#     grid.arrange(plot_bivalent_fit[[well_idx]])
-#     data_file_name <- paste("figures/bulkshift_long/fitbulkshift_long",well_idx,".png",sep="")
-#     ggsave(filename = data_file_name, plot=plot_bivalent_fit[[well_idx]])
-#   }
-# }
-# dev.off()
 
 # Bivalent
 plot_bivalent_fit <- map(.x = 1:nwells, .f = plot_sensorgrams_with_fits,
@@ -238,7 +185,7 @@ for (well_idx in 1:nwells){
   print(well_idx)
   if (!is.null(plot_bivalent_fit[[well_idx]])){
     grid.arrange(plot_bivalent_fit[[well_idx]])
-    data_file_name <- paste("paper_codes/figures/bivalent_old_short/fitbivalent_old_short",well_idx,".png",sep="")
+    data_file_name <- paste(files_directory,"/figures/bivalent/fitbivalent",well_idx,".png",sep="")
     ggsave(filename = data_file_name, plot=plot_bivalent_fit[[well_idx]])
   }
 }
@@ -261,7 +208,7 @@ sort_idx <- as_vector(sort_idx)
 pages_list <- map(sort_idx, plot_bivalent_fitting,
                   fits_list, plot_bivalent_fit, sample_info$NumInclConc, rc_list, plot_list_before_baseline)
 
-pdf(file = "paper_codes/figures/bivalent_old_short/Antigen2_out_bivalent_new.pdf")
+pdf(file = paste(files_directory,"/figures/bivalent/sensorgram.pdf",sep=""))
 for (well_idx in 1:nwells){
   print(well_idx)
   if (!is.null(pages_list[[well_idx]]$result)){
