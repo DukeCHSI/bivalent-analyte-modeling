@@ -143,16 +143,16 @@ plot_list <- map(.x = 1:nwells, .f = plot_sensorgrams_with_nobaseline, sample_in
 fixed_sheet <- NULL
 
 ## Fit using non-parallel computing
-fits_list <- map(.x = 1:nwells, .f = fit_association_dissociation,
-                          sample_info,
-                          Time[, keep_concentrations],
-                          RU[, keep_concentrations],
-                          incl_concentrations_values,
-                          fixed_sheet,
-                          min_allowed_kd,
-                          max_iterations,
-                          ptol,
-                          ftol)
+# fits_list <- map(.x = 1:nwells, .f = fit_association_dissociation,
+#                           sample_info,
+#                           Time[, keep_concentrations],
+#                           RU[, keep_concentrations],
+#                           incl_concentrations_values,
+#                           fixed_sheet,
+#                           min_allowed_kd,
+#                           max_iterations,
+#                           ptol,
+#                           ftol)
 
 ## Fit using parallel computing
 fits_list <- mclapply(X = 1:nwells, FUN = fit_association_dissociation, mc.cores = num_cores, sample_info,
