@@ -1,13 +1,4 @@
----
-title: "README"
-output: github_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-## R Template Project
+## Bivalent analyte package
 
 This provides information about R-package for model fitting binding kinetics data using bivalent analyte.
 
