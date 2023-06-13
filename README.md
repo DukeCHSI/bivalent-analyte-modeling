@@ -66,5 +66,3 @@ The required formatting for this package is not the same as other packages. If y
 1. In the info sheet file (.csv), make sure the numbers in `Block/Chip/Tray` are separated by semicolon (`;`).
 2. In the output file (.xlsx), make sure there are 3 header rows. One possible option is to copy and inserted the header rows from the provided output file to your own output file.
 3. In the info sheet file (.csv), make sure you have two columns `Sec. Rebinding` and `Model`. 
-  - `Sec. Rebinding`: we could assume that the second arms cannot rebind during dissociation phase (`Sec. Rebinding = N`). However, we could also assume that the second arms can rebind during dissociation phase (`Sec. Rebinding = Y`). This is up to the user to decide, however, the default option is `Sec. Rebinding = N`.
-  - `Model`: this version only contains bivalent analyte model, so please set `Model = bivalentAnalyte`. 
