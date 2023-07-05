@@ -2,6 +2,16 @@
 
 An R-package for fitting binding kinetics data using the bivalent analyte model.
 
+# Overview
+
+This repository contains the necessary files to execute the first version of bivalent analyte model developed by Nguyen et al.
+
+Please cite the following when implementing this depository: Nguyen, K., Li, K., McCarthy, J., & Dennison, S. M. Bivalent Analyte Model Package (Version 1.0) [Computer software]. https://github.com/DukeCHSI/Bivalent-Analyte-Modeling
+
+# Description
+
+This package provides the ability to analyze bivalent analyte binding data collected on a high throughput SPR platform, such as Carterra LSA. The package sequentially analyzes each individual sensorgram and generates report-ready style fitted sensorgrams and parameter estimates.
+
 # Folder Structure
 
 The depository comprises of two main folders:
@@ -65,4 +75,12 @@ There are certain requirements of formatting for this package. If you run into p
 
 1. In the info sheet file (.csv), make sure the numbers in `Block/Chip/Tray` are separated by semicolon (`;`).
 2. In the output file (.xlsx), make sure there are 3 header rows. One possible option is to copy and inserted the header rows from the provided output file to your own output file.
-3. In the info sheet file (.csv), make sure you have two columns `Sec. Rebinding` and `Model`. 
+3. In the info sheet file (.csv), make sure you have two columns `Sec. Rebinding` and `Model`.
+
+# Version history
+Version 1.0: initial release
+# Help
+If you need help or have suggestions, feel free to contact Kan Li via email at kl122@duke.edu. You may also communicate through GitHub Discussions.
+# Author
+Code was developed by Kyle Nguyen and Janice M. McCarthy.
+Other contributors to code development include Kan Li (kl122@duke.edu) and S. Moses Dennison (moses.sekaran@duke.edu). 
