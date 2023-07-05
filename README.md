@@ -88,7 +88,7 @@ If you need help or have suggestions, feel free to communicate through GitHub Di
 2. Kan Li: kl122@duke.edu
 3. Janice M. McCarthy: janice.mccarthy@duke.edu
 # Author
-Code was developed by Kyle Nguyen and Janice M. McCarthy .
+Code was developed by Kyle Nguyen and Janice M. McCarthy.
 Other contributors to code development include Kan Li and S. Moses Dennison (moses.sekaran@duke.edu). 
 # License
 This project is licensed under the CC-BY-4.0 license. Please see LICENSE.md file for details.
