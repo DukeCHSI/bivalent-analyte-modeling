@@ -82,7 +82,7 @@ There are certain requirements of formatting for this package. If you run into p
 # Version history
 Version 1.0: initial release
 # Help
-If you need help or have suggestions, feel free to contact Kan Li via email at kl122@duke.edu or contact Kyle Nguyen (kcnguye2@ncsu.edu). You may also communicate through GitHub Discussions.
+If you need help or have suggestions, feel free to contact Kan Li via email at kl122@duke.edu or contact Kyle Nguyen via email at kcnguye2@ncsu.edu. You may also communicate through GitHub Discussions.
 # Author
 Code was developed by Kyle Nguyen (kcnguye2@ncsu.edu) and Janice M. McCarthy (janice.mccarthy@duke.edu).
 Other contributors to code development include Kan Li (kl122@duke.edu) and S. Moses Dennison (moses.sekaran@duke.edu). 
