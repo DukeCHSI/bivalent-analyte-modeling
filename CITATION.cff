@@ -15,14 +15,14 @@ authors:
     family-names: Li
     email: kl122@duke.edu
     affiliation: Duke University
-  - given-names: S. Moses
-    family-names: Dennison
-    email: moses.sekaran@duke.edu
-    affiliation: Duke University
   - email: janice.mccarthy@duke.edu
     affiliation: Duke University
     given-names: Janice
     family-names: McCarthy
+  - given-names: S. Moses
+    family-names: Dennison
+    email: moses.sekaran@duke.edu
+    affiliation: Duke University
 repository-code: 'https://github.com/DukeCHSI/Bivalent-Analyte-Modeling'
 abstract: >-
   An R-package for fitting binding kinetics data using the
