@@ -19,8 +19,6 @@ files_directory  <-  rstudioapi::selectDirectory(
   label <- "Select"
 )
 
-# setwd("~/Summer2022/project/hiv-summer-2022/")
-
 source(paste(files_directory,"/ode_functions.R",sep=""))
 source(paste(files_directory,"/helper_functions.R",sep=""))
 
@@ -28,7 +26,7 @@ source(paste(files_directory,"/helper_functions.R",sep=""))
 sample_sheet_path <- rstudioapi::selectFile(caption = "Select the sample sheet file",
                                             filter ="All Files (*)",
                                             existing = TRUE)
-# sample_sheet_path <- "paper_data/Bivalent Binding 2nd - CH505 CH31 - info sheet.csv"
+# sample_sheet_path <- "data/Bivalent Binding - CH505 CH31 NonRegen - info sheet.csv"
 sample_sheet <- read_csv(sample_sheet_path)
 
 rows_dict <- list(A = 1, E = 2,
@@ -41,7 +39,7 @@ sample_info <- process_sample_sheet(sample_sheet_path, rows_dict, sort_order = "
 data_file_path <- rstudioapi::selectFile(caption = "Select the data file",
                                          filter = "All Files (*)",
                                          existing = TRUE)
-# data_file_path <- "paper_data/Bivalent Binding 2nd - CH505 CH31 - new output format.xlsx"
+# data_file_path <- "data/Bivalent Binding - CH505 CH31 NonRegen - downselected rawdata.xlsx"
 titration_data <- read_excel(data_file_path, col_names = TRUE, skip = 2, n_max = 1000)
 
 ####### User preferences #############################################
