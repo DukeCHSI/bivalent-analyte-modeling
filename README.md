@@ -1,12 +1,12 @@
-## Bivalent analyte package
+# Bivalent analyte package
 
-This provides information about R-package for model fitting binding kinetics data using bivalent analyte.
+An R-package for fitting binding kinetics data using the bivalent analyte model.
 
-## Folder Structure
+# Folder Structure
 
 The depository comprises of two main folders:
 
-### data/
+## data/
 
 This folder should contain two important files:
 
@@ -28,7 +28,7 @@ This folder should contain two important files:
       - use_RI <- sample_info[well_idx,]$`Refractive index`
 2. **<...> - downselected rawdata.xlsx**: this xlsx file is an output file has the Time and Response Unit data values.
 
-### code/
+## code/
 
 This folder should contain `.R` files and subfolders
 
@@ -40,9 +40,9 @@ In this folder:
 - **fitting_results/** is the folder that contains fitting result files (`.Rdata`).
 - **figures/** contains the figure files
 
-## Guide 
+# Guide 
 
-### Start guide
+## Start guide
 
 To start the bivalent analyte model fitting:
 
@@ -52,14 +52,14 @@ To start the bivalent analyte model fitting:
 4. The script will ask for the info sheet file.
 5. The script will ask for the output file.
 
-### Results
+## Results
 
 After fitting running,
 
 1. The fitting results are saved in an `.Rdata` file within **fitting_results/**.
 2. The fitting figures and sensorgrams are saved in **figures/bivalent/**.
 
-### Troubleshooting
+## Troubleshooting
 
 There are certain requirements of formatting for this package. If you run into problems,
 
