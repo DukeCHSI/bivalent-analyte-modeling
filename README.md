@@ -82,10 +82,14 @@ There are certain requirements of formatting for this package. If you run into p
 # Version history
 Version 1.0: initial release
 # Help
-If you need help or have suggestions, feel free to contact Kan Li via email at kl122@duke.edu or contact Kyle Nguyen via email at kcnguye2@ncsu.edu. You may also communicate through GitHub Discussions.
+If you need help or have suggestions, feel free to communicate through GitHub Discussions or contact one or more of the following:
+
+1. Kyle Nguyen: kcnguye2@ncsu.edu
+2. Kan Li: kl122@duke.edu
+3. Janice M. McCarthy: janice.mccarthy@duke.edu
 # Author
-Code was developed by Kyle Nguyen (kcnguye2@ncsu.edu) and Janice M. McCarthy (janice.mccarthy@duke.edu).
-Other contributors to code development include Kan Li (kl122@duke.edu) and S. Moses Dennison (moses.sekaran@duke.edu). 
+Code was developed by Kyle Nguyen and Janice M. McCarthy .
+Other contributors to code development include Kan Li and S. Moses Dennison (moses.sekaran@duke.edu). 
 # License
 This project is licensed under the CC-BY-4.0 license. Please see LICENSE.md file for details.
 
