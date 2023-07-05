@@ -4,7 +4,7 @@ This provides information about R-package for model fitting binding kinetics dat
 
 ## Folder Structure
 
-The project comprises of two main folders:
+The depository comprises of two main folders:
 
 ### data/
 
@@ -26,7 +26,7 @@ This folder should contain two important files:
     - `Model`: this option was included because there is a separated version that could handle different models other than just the 1:1 model and the bivalent analyte model. However, it was developed on parallel with the more user-friendly version of the 1:1 model package. So, the implementation to handle other models have been removed.
     - `Refractive index`: the current version can handle refractive index. However, it is not an available option in the info sheet. If the user want to use refractive index, they could add another column called `Refractive index` to the info sheet file (.csv). Then, go to **ode_function.R** and change line 128 to:
       - use_RI <- sample_info[well_idx,]$`Refractive index`
-2. **<...> - new output format.xlsx**: this xlsx file is an output file has the Time and Response Unit data values.
+2. **<...> - downselected rawdata.xlsx**: this xlsx file is an output file has the Time and Response Unit data values.
 
 ### code/
 
