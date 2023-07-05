@@ -61,7 +61,7 @@ After fitting running,
 
 ### Troubleshooting
 
-The required formatting for this package is not the same as other packages. If you run into problems,
+There are certain requirements of formatting for this package. If you run into problems,
 
 1. In the info sheet file (.csv), make sure the numbers in `Block/Chip/Tray` are separated by semicolon (`;`).
 2. In the output file (.xlsx), make sure there are 3 header rows. One possible option is to copy and inserted the header rows from the provided output file to your own output file.
