@@ -33,7 +33,7 @@ This folder should contain two important files:
       - `Sec. Rebinding = Y`: assume that the second arms can rebind during dissociation phase.
   - Other notes:
     - `Bulkshift`: is currently not implemented in this package.
-    - `Model`: this option was included because there is a separated version that could handle different models other than just the 1:1 model and the bivalent analyte model. However, it was developed on parallel with the more user-friendly version of the 1:1 model package. So, the implementation to handle other models have been removed.
+    - `Model`: this option was included to enable future package that could handle different models including the 1:1 model, the bivalent analyte model and more. However, it was developed on parallel with a 1:1 binding model package. The implementation to handle other models have been removed here.
     - `Refractive index`: the current version can handle refractive index. However, it is not an available option in the info sheet. If the user want to use refractive index, they could add another column called `Refractive index` to the info sheet file (.csv). Then, go to **ode_function.R** and change line 128 to:
       - use_RI <- sample_info[well_idx,]$`Refractive index`
 2. **<...> - downselected rawdata.xlsx**: this xlsx file is an output file has the Time and Response Unit data values.
