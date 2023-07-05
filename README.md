@@ -7,6 +7,7 @@ An R-package for fitting binding kinetics data using the bivalent analyte model.
 This repository contains the necessary files to execute the first version of bivalent analyte model developed by Nguyen et al.
 
 Please cite the following when implementing this depository: Nguyen, K., Li, K., McCarthy, J., & Dennison, S. M. Bivalent Analyte Model Package (Version 1.0) [Computer software]. https://github.com/DukeCHSI/Bivalent-Analyte-Modeling
+
 Alternatively, cite: Kyle Nguyen, Kan Li, Kevin Flores, Georgia D. Tomaras, S. Moses Dennison, Janice M. McCarthy. Parameter estimation and identifiability analysis for a bivalent analyte model of monoclonal antibody-antigen binding. bioRxiv 2022.12.05.519088; doi: https://doi.org/10.1101/2022.12.05.519088
 
 # Description
