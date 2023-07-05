@@ -86,3 +86,5 @@ If you need help or have suggestions, feel free to contact Kan Li via email at k
 # Author
 Code was developed by Kyle Nguyen (kcnguye2@ncsu.edu) and Janice M. McCarthy (janice.mccarthy@duke.edu).
 Other contributors to code development include Kan Li (kl122@duke.edu) and S. Moses Dennison (moses.sekaran@duke.edu). 
+# License
+This project is licensed under the CC-BY-4.0 license. Please see LICENSE.md file for details.
